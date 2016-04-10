@@ -1,0 +1,8 @@
+# Arduino devices
+# This file should be installed to /etc/udev/rules.d so that you can access the Hantek DSO Oscilloscope without being root
+#
+
+# Hantek Hantek6082BE
+SUBSYSTEM=="usb", ACTION=="add", ENV{DEVTYPE}=="usb_device", ENV{PRODUCT}=="4b4/6081/*", RUN+="/sbin/fxload -t fx2 -I /opt/Hantek/Hantek6082BEAMD641.sys.0x17C0.hex -s /opt/Hantek/Hantek6082BEAMD641.sys.0x1290.hex -D $env{DEVNAME}"
+ATTRS{idVendor}=="04b5", ATTRS{idProduct}=="520a", MODE="0660", GROUP="plugdev"
+ATTRS{idVendor}=="04b5", ATTRS{idProduct}=="6081", MODE="0660", GROUP="plugdev"

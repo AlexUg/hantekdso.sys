@@ -1,0 +1,2 @@
+#!/bin/bash
+winemaker --nosource-fix --dll --nomfc -I/opt/wine-devel/include/wine/ -lntoskrnl.exe -lwine .
