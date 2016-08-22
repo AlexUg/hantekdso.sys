@@ -4,7 +4,8 @@
 ### /opt/wine/bin/winemaker --nosource-fix --dll --nomfc -I/opt/wine/include/wine/ -l:ntoskrnl.exe.so -lwine -lusb-1.0 -lpthread .
 
 USER			= masiw
-WINE_LIBS_PATH	= /opt/wine/lib/wine/
+X86_64		= $(shell [[ `uname -m` == "x86_64" ]] && echo "64" || echo "")
+WINE_LIBS_PATH	= /opt/wine/lib$(X86_64)/wine/
 
 
 SRCDIR                = .
