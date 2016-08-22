@@ -93,11 +93,11 @@ NTSTATUS WINAPI DriverEntry( DRIVER_OBJECT *driver, UNICODE_STRING *path )
 			WINE_FIXME( "failed to create device error %x\n", status );
 			return status;
 		}
+
+	WINE_TRACE( "Hantek DSO Wine Driver was started\n" );
     } else {
     	WINE_ERR( "Hantek DSO Device initialization failed\n" );
     }
-
-    WINE_TRACE( "Hantek DSO Wine Driver was started\n" );
 
     return status;
 }

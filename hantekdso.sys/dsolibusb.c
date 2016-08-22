@@ -8,7 +8,11 @@
 
 #include <libusb-1.0/libusb.h>
 
+#include <debug.h>
+
 #include "dsolibusb.h"
+
+WINE_DEFAULT_DEBUG_CHANNEL(hantekdso);
 
 struct t_dso_device_descriptor {
 	struct libusb_device_descriptor libusbDescriptor;
@@ -27,15 +31,19 @@ int initDSODevice(void)
 	libusb_device **devices;
 	libusb_device *device;
 	struct libusb_device_descriptor devDescriptror;
+	
+	int status = libusb_init(NULL);
 
-	if (libusb_init(NULL))
+	if (status)
 	{
+		WINE_ERR( "libusb_init() failed. Error: %d\n", status );
 		return 1;
 	} else
 	{
 		devCount = libusb_get_device_list(NULL, &devices);
 		if (devCount < 0)
 		{
+			WINE_ERR( "libusb_get_device_list() failed.\n" );
 			return 2;
 		}
 
@@ -46,6 +54,7 @@ int initDSODevice(void)
 			{
 				continue;
 			}
+			WINE_TRACE( "check device: 0x%04x:0x%04x\n", devDescriptror.idVendor, devDescriptror.idProduct );
 			if ((devDescriptror.idVendor == 0x04B5)
 					&& (devDescriptror.idProduct == 0x6081))
 			{
@@ -58,7 +67,7 @@ int initDSODevice(void)
 			}
 		}
 	}
-
+	WINE_TRACE( "Hantek DSO devices aren't found\n" );
 	return 3;
 }
 
