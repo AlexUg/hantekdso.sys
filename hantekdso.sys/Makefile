@@ -5,7 +5,7 @@
 
 USER			= masiw
 X86_64		= $(shell [[ `uname -m` == "x86_64" ]] && echo "64" || echo "")
-WINE_LIBS_PATH	= /opt/wine/lib$(X86_64)/wine/
+WINE_LIBS_PATH	= /usr/lib$(X86_64)/wine/
 
 
 SRCDIR                = .
@@ -22,7 +22,7 @@ CEXTRA                = -mno-cygwin
 CXXEXTRA              =
 RCEXTRA               =
 DEFINES               =
-INCLUDE_PATH          = -I/opt/wine/include/wine/ \
+INCLUDE_PATH          = -I/usr/include/wine/ \
 			-I.
 DLL_PATH              =
 DLL_IMPORTS           =
