@@ -75,7 +75,45 @@ int openDSODevice(void)
 {
 	if (pdsoDescriptor)
 	{
-		return libusb_open(pdsoDescriptor->dsoDevice, &pdsoDescriptor->dsoDeviceHandle);
+		WINE_TRACE( "Open USB device\n" );
+		if (pdsoDescriptor->dsoDeviceHandle)
+		{
+			closeDSODevice();
+		}
+		int errCode = libusb_open(pdsoDescriptor->dsoDevice, &pdsoDescriptor->dsoDeviceHandle);
+		if (errCode)
+		{
+			WINE_ERR( "libusb_open error: %d->%s\n", errCode, libusb_error_name(errCode) );
+		}
+		else
+		{
+			errCode = libusb_set_auto_detach_kernel_driver(pdsoDescriptor->dsoDeviceHandle, 1);
+			if (errCode)
+			{
+				WINE_ERR( "libusb_set_auto_detach_kernel_driver error: %d->%s\n", errCode, libusb_error_name(errCode) );
+			}
+			else
+			{
+				errCode = libusb_claim_interface(pdsoDescriptor->dsoDeviceHandle, 0);
+				if (errCode)
+				{
+					errCode = libusb_set_configuration(pdsoDescriptor->dsoDeviceHandle, 1);
+					if (errCode)
+					{
+						WINE_ERR( "libusb_set_configuration error: %d->%s\n", errCode, libusb_error_name(errCode) );
+					}
+					else
+					{
+						errCode = libusb_claim_interface(pdsoDescriptor->dsoDeviceHandle, 0);
+						if (errCode)
+						{
+							WINE_ERR( "libusb_claim_interface error: %d->%s\n", errCode, libusb_error_name(errCode) );
+						}
+					}
+				}
+			}
+		}
+		return errCode;
 	}
 	return 1;
 }
@@ -124,23 +162,54 @@ int controlOutDSODevice(uint8_t bRequest,
 	return 1;
 }
 
-int writeDSODevice(unsigned char *data, int length)
+int dsoBulkConversation(unsigned char ep, unsigned char *data, int length, int tryCount)
 {
 	int actualLength = 0;
+	int tryCounts = 0;
+	do
+	{
+		if (tryCounts < tryCount)
+		{
+			int errCode = libusb_bulk_transfer(pdsoDescriptor->dsoDeviceHandle,
+												ep,
+												data,
+												length,
+												&actualLength,
+												0);
+			if (errCode)
+			{
+				WINE_ERR( "libusb_bulk_transfer error: %d->%s\n", errCode, libusb_error_name(errCode) );
+				closeDSODevice();
+				usleep(500000);
+				openDSODevice();
+				usleep(100000);
+			}
+			if (!actualLength)
+			{
+				//usleep(100000);
+				tryCounts++;
+				WINE_ERR( "no data transferred, try again\n" );
+			} else {
+				tryCounts = 0;
+				data += actualLength;
+				length -= actualLength;
+			}
+		}
+		else
+		{
+			WINE_ERR( "no data transferred, try exceed %d times. Exiting...\n", tryCount );
+			return 1;
+		}
+
+	} while (length);
+	return 0;
+}
+
+int writeDSODevice(unsigned char *data, int length)
+{
 	if (pdsoDescriptor && pdsoDescriptor->dsoDeviceHandle)
 	{
-		do
-		{
-			libusb_bulk_transfer(pdsoDescriptor->dsoDeviceHandle,
-											pdsoDescriptor->outEndpoint,
-											data,
-											length,
-											&actualLength,
-											0);
-			data += actualLength;
-			length -= actualLength;
-		} while (length);
-		return 0;
+		return dsoBulkConversation(pdsoDescriptor->outEndpoint, data, length, 10);
 	}
 	return 1;
 }
@@ -150,18 +219,7 @@ int readDSODevice(unsigned char *data, int length)
 	int actualLength = 0;
 	if (pdsoDescriptor && pdsoDescriptor->dsoDeviceHandle)
 	{
-		do
-		{
-			libusb_bulk_transfer(pdsoDescriptor->dsoDeviceHandle,
-											pdsoDescriptor->inEndpoint,
-											data,
-											length,
-											&actualLength,
-											0);
-			data += actualLength;
-			length -= actualLength;
-		} while (length);
-		return 0;
+		return dsoBulkConversation(pdsoDescriptor->inEndpoint, data, length, 10);
 	}
 	return 1;
 }
@@ -170,8 +228,13 @@ int closeDSODevice(void)
 {
 	if (pdsoDescriptor)
 	{
-		libusb_close(pdsoDescriptor->dsoDeviceHandle);
-		pdsoDescriptor->dsoDeviceHandle = 0;
+		if (pdsoDescriptor->dsoDeviceHandle)
+		{
+			WINE_TRACE( "Close USB device\n" );
+			libusb_release_interface(pdsoDescriptor->dsoDeviceHandle, 0);
+			libusb_close(pdsoDescriptor->dsoDeviceHandle);
+			pdsoDescriptor->dsoDeviceHandle = 0;
+		}
 		return 0;
 	}
 	return 1;
