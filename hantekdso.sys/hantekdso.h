@@ -8,8 +8,10 @@
 #ifndef HANTEKDSO_H_
 #define HANTEKDSO_H_
 
+
+#include "dsolibusb.h"
+
 #include <stdarg.h>
-#include <unistd.h>
 
 #define NONAMELESSUNION
 
@@ -19,8 +21,6 @@
 #include <ntstatus.h>
 #include <ddk/wdm.h>
 #include <wtypes.h>
-
-#include "dsolibusb.h"
 
 WINE_DEFAULT_DEBUG_CHANNEL(hantekdso);
 

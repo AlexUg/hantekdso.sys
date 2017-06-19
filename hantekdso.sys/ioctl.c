@@ -17,8 +17,6 @@ NTSTATUS dso_ioctl_replay(DEVICE_OBJECT *device, IRP *irp)
 	ULONG outSize = irpsp->Parameters.DeviceIoControl.OutputBufferLength;
 	PBYTE outData = (PBYTE) irp->MdlAddress->StartVa + irp->MdlAddress->ByteOffset;
 
-	WINE_TRACE( "device replay : data size: %d, outdata address: 0x%x\n", outSize, outData);
-
 	result = readDSODevice(outData, outSize);
 
 	if (outSize)
@@ -34,10 +32,6 @@ NTSTATUS dso_ioctl_request(DEVICE_OBJECT *device, IRP *irp)
 	ULONG outSize = irpsp->Parameters.DeviceIoControl.OutputBufferLength;
 	PBYTE outData = (PBYTE) irp->MdlAddress->StartVa + irp->MdlAddress->ByteOffset;
 
-	WINE_TRACE( "device request : command: 0x%02x%02x\n", *(outData + 1), *outData);
-
-	WINE_TRACE( "device request : data size: %d, outdata address: 0x%x\n", outSize, outData);
-
 	return writeDSODevice(outData, outSize);
 }
 
@@ -48,15 +42,6 @@ NTSTATUS dso_ioctl_control(DEVICE_OBJECT *device, IRP *irp)
 	ULONG outSize = irpsp->Parameters.DeviceIoControl.OutputBufferLength;
 	PBYTE outData = (PBYTE) irp->MdlAddress->StartVa + irp->MdlAddress->ByteOffset;
 	struct t_dso_ioctl_data *ioctl_data = (struct t_dso_ioctl_data *) irp->AssociatedIrp.SystemBuffer;
-
-	//          irpsp->Parameters.DeviceIoControl.OutputBufferLength
-	WINE_TRACE( "dso_ioctl_control direction: %d, command: %x, value: %x, data size: %d, outdata address: 0x%x\n",
-				ioctl_data->header.direction,
-				ioctl_data->command,
-				ioctl_data->value,
-				outSize,
-				outData
-		  );
 
 	if (ioctl_data->header.direction) {
 		result = controlInDSODevice(ioctl_data->command, ioctl_data->value, 0, outData, outSize);

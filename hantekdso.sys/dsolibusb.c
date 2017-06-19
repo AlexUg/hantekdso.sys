@@ -24,6 +24,25 @@ struct t_dso_device_descriptor {
 
 static struct t_dso_device_descriptor *pdsoDescriptor = 0, dsoDescriptor;
 
+
+int nsleep(long miliseconds)
+{
+   struct timespec req, rem;
+
+   if(miliseconds > 999)
+   {   
+        req.tv_sec = (int)(miliseconds / 1000);                            /* Must be Non-Negative */
+        req.tv_nsec = (miliseconds - ((long)req.tv_sec * 1000)) * 1000000; /* Must be in range of 0 to 999999999 */
+   }   
+   else
+   {   
+        req.tv_sec = 0;                         /* Must be Non-Negative */
+        req.tv_nsec = miliseconds * 1000000;    /* Must be in range of 0 to 999999999 */
+   }   
+   return nanosleep(&req , &rem);
+}
+
+
 int initDSODevice(void)
 {
 	ssize_t devCount = 0;
@@ -180,9 +199,9 @@ int dsoBulkConversation(unsigned char ep, unsigned char *data, int length, int t
 			{
 				WINE_ERR( "libusb_bulk_transfer error: %d->%s\n", errCode, libusb_error_name(errCode) );
 				closeDSODevice();
-				usleep(500000);
+				nsleep(500);
 				openDSODevice();
-				usleep(100000);
+				nsleep(100);
 			}
 			if (!actualLength)
 			{

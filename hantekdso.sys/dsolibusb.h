@@ -9,6 +9,9 @@
 #define DSOLIBUSB_H_
 
 
+#include <unistd.h>
+#include <time.h>
+
 #include <stdint.h>
 
 
