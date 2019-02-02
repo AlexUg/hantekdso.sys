@@ -25,10 +25,9 @@ WINEPREFIX		= .wine_hantek
 USER					= alexandr
 WINE_LIBS_PATH = /opt/wine-stable/lib/wine/
 ```
-    WINEPREFIX
-'wine prefix name' in which Hantek software was installed;
-    USER - 'user name';
-    WINE_LIBS_PATH - path to wine libs
+**WINEPREFIX** - 'wine prefix name' in which Hantek software was installed;
+**USER** - 'user name';
+**WINE_LIBS_PATH** - path to wine libs
 
 For installing run:
 ```
