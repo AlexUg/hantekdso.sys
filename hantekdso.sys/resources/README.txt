@@ -1,4 +1,3 @@
-direct.patch -- Wine 1.9.7 patch
 hantekdso.reg -- registry entry for Hantek DSO driver
 
 Hantek6082BEAMD641.sys.0x1290.hex -- FX loader
