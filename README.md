@@ -13,9 +13,9 @@ make
 
 # Installation
 Overal installation process requires next steps:
-1 copy fake dll 'hantekdso.sys.fake' to 'drive_c/windows/syswow64/drivers/hantekdso.sys' in wine prefix directory;
-2 copy shared lib 'hantekdso.sys.so' to 'lib/wine/' subdir in wine installation directory;
-3 import registry from 'resources/hantekdso.reg' using 'regedit.exe';
+1. copy fake dll 'hantekdso.sys.fake' to 'drive_c/windows/syswow64/drivers/hantekdso.sys' in wine prefix directory;
+2. copy shared lib 'hantekdso.sys.so' to 'lib/wine/' subdir in wine installation directory;
+3. import registry from 'resources/hantekdso.reg' using 'regedit.exe';
 
 First two steps can be done with 'make'.
 
