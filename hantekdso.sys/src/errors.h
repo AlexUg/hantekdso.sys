@@ -1,0 +1,40 @@
+/*
+ * errors.h
+ *
+ *  Created on: 29 янв. 2019 г.
+ *      Author: ugnenko
+ */
+
+#ifndef ERRORS_H_
+#define ERRORS_H_
+
+#define FOREACH_DSOERROR(DSOERROR) \
+        DSOERROR(DSO_NO_ERROR) \
+        DSOERROR(DSO_DUBLICATE_DEVICE_DEFINITION) \
+        DSOERROR(DSO_INIT) \
+        DSOERROR(DSO_NULL_HANDLE) \
+        DSOERROR(DSO_ENUMERATION_DEVICES) \
+        DSOERROR(DSO_OPEN_DEIVCE) \
+        DSOERROR(DSO_DETACH_KRN_DRV) \
+        DSOERROR(DSO_SET_CONF) \
+        DSOERROR(DSO_CLAIM_IFACE) \
+        DSOERROR(DSO_RELEASE_IFACE) \
+        DSOERROR(DSO_WRITE_DEVICE) \
+        DSOERROR(DSO_READ_DEVICE) \
+        DSOERROR(DSO_CTRL_OUT_DEVICE) \
+        DSOERROR(DSO_CTRL_IN_DEVICE) \
+        DSOERROR(DSO_NO_MEMORY) \
+
+
+#define GENERATE_ENUM(ENUM) ENUM,
+#define GENERATE_STRING(STRING) #STRING,
+
+enum DSO_ERRORS
+{
+  FOREACH_DSOERROR(GENERATE_ENUM)
+};
+
+const char *
+dso_error_name (int dso_error_code);
+
+#endif /* ERRORS_H_ */
