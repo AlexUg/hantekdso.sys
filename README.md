@@ -2,6 +2,9 @@
 Wine driver for Hantek DSO 6xxxYY USB Oscilloscopes.
 Required Wine v.4.0.0 or above.
 
+[Дополнительное описание.](https://github.com/AlexUg/hantekdso.sys/wiki/Russian)
+[Additional description](https://github.com/AlexUg/hantekdso.sys/wiki/English)
+
 Tested on KDE neon User Edition 5.14 (18.04, kernel: 4.15.0-45-generic platform: x86-64).
 
 # Build
