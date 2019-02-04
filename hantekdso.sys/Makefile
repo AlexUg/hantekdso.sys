@@ -103,7 +103,7 @@ CLEAN_FILES     = y.tab.c y.tab.h lex.yy.c core *.orig *.rej \
 
 clean:: $(SUBDIRS:%=%/__clean__) $(EXTRASUBDIRS:%=%/__clean__)
 	$(RM) $(CLEAN_FILES) $(RC_SRCS:.rc=.res) $(C_SRCS:.c=.o) $(CXX_SRCS:.cpp=.o)
-	$(RM) $(DLLS:%=%.so) $(LIBS) $(EXES) $(EXES:%=%.so) $(EXES:%=%.fake)
+	$(RM) $(DLLS:%=%.so) $(DLLS:%=%.fake) $(LIBS) $(EXES) $(EXES:%=%.so) $(EXES:%=%.fake)
 
 $(SUBDIRS:%=%/__clean__): dummy
 	cd `dirname $@` && $(MAKE) clean
