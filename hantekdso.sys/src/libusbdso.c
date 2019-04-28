@@ -292,51 +292,55 @@ libusbdso_open_device (void * dso_device_handle)
       dso_desc = dso_device_handle;
       if (dso_desc->dso_device_handle)
         {
-          libusbdso_close_device (dso_desc);
-        }
-      libusb_status_code = libusb_open (dso_desc->dso_device,
-                                        &dso_desc->dso_device_handle);
-      if (libusb_status_code)
-        {
-          status = DSO_OPEN_DEIVCE;
+//          libusbdso_close_device (dso_desc);
+          status = DSO_NO_ERROR;
         }
       else
         {
-          status = DSO_NO_ERROR;
-          libusb_status_code = libusb_set_auto_detach_kernel_driver (
-              dso_desc->dso_device_handle, 1);
-          if (libusb_status_code)
-            {
-              status = DSO_DETACH_KRN_DRV;
-            }
-          else
-            {
-              libusb_status_code = libusb_claim_interface (
-                  dso_desc->dso_device_handle, 0);
-              if (libusb_status_code)
-                {
-                  libusb_status_code = libusb_set_configuration (
-                      dso_desc->dso_device_handle, 1);
-                  if (libusb_status_code)
-                    {
-                      status = DSO_SET_CONF;
-                    }
-                  else
-                    {
-                      libusb_status_code = libusb_claim_interface (
-                          dso_desc->dso_device_handle, 0);
-                      if (libusb_status_code)
-                        {
-                          status = DSO_CLAIM_IFACE;
-                        }
-                    }
-                }
-            }
-          if (status)
-            {
-              libusb_close (dso_desc->dso_device_handle);
-              dso_desc->dso_device_handle = 0;
-            }
+        libusb_status_code = libusb_open (dso_desc->dso_device,
+                                          &dso_desc->dso_device_handle);
+        if (libusb_status_code)
+          {
+            status = DSO_OPEN_DEIVCE;
+          }
+        else
+          {
+            status = DSO_NO_ERROR;
+            libusb_status_code = libusb_set_auto_detach_kernel_driver (
+                dso_desc->dso_device_handle, 1);
+            if (libusb_status_code)
+              {
+                status = DSO_DETACH_KRN_DRV;
+              }
+            else
+              {
+                libusb_status_code = libusb_claim_interface (
+                    dso_desc->dso_device_handle, 0);
+                if (libusb_status_code)
+                  {
+                    libusb_status_code = libusb_set_configuration (
+                        dso_desc->dso_device_handle, 1);
+                    if (libusb_status_code)
+                      {
+                        status = DSO_SET_CONF;
+                      }
+                    else
+                      {
+                        libusb_status_code = libusb_claim_interface (
+                            dso_desc->dso_device_handle, 0);
+                        if (libusb_status_code)
+                          {
+                            status = DSO_CLAIM_IFACE;
+                          }
+                      }
+                  }
+              }
+            if (status)
+              {
+                libusb_close (dso_desc->dso_device_handle);
+                dso_desc->dso_device_handle = 0;
+              }
+          }
         }
 
       pthread_mutex_unlock(&dso_lock);
@@ -636,6 +640,12 @@ const char *
 libusbdso_last_error ()
 {
   return libusb_error_name (libusb_status_code);
+}
+
+int
+libusbdso_last_error_code ()
+{
+  return libusb_status_code;
 }
 
 int

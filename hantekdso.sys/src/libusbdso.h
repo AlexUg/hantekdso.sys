@@ -186,4 +186,7 @@ libusbdso_get_product_id(void * dso_device_handle);
 const char *
 libusbdso_last_error ();
 
+int
+libusbdso_last_error_code ();
+
 #endif /* LIBUSBDSO_H_ */
