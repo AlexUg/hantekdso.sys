@@ -275,7 +275,7 @@ libusbdso_start (struct t_dso_driver_descriptor * driver_desc)
     }
   else
     {
-      return DSO_NULL_HANDLE;
+      return DSO_NULL_DESCRIPTER;
     }
 }
 
@@ -348,7 +348,7 @@ libusbdso_open_device (void * dso_device_handle)
     }
   else
     {
-      status = DSO_NULL_HANDLE;
+      status = DSO_NULL_DESCRIPTER;
     }
   return status;
 }
@@ -384,7 +384,7 @@ libusbdso_write_device (void * dso_device_handle, unsigned char *data,
     }
   else
     {
-      status = DSO_NULL_HANDLE;
+      status = DSO_NULL_DESCRIPTER;
     }
   return status;
 }
@@ -420,7 +420,7 @@ libusbdso_read_device (void * dso_device_handle, unsigned char *data,
     }
   else
     {
-      status = DSO_NULL_HANDLE;
+      status = DSO_NULL_DESCRIPTER;
     }
   return status;
 }
@@ -445,7 +445,11 @@ libusbdso_control_in_device (void * dso_device_handle, uint8_t request,
               dso_desc->dso_device_handle,
               LIBUSB_ENDPOINT_IN | LIBUSB_REQUEST_TYPE_VENDOR, request, value,
               index, data, length, 0);
-          if ((libusb_status_code < 0) || (libusb_status_code != length))
+//          if ((libusb_status_code < 0) || (libusb_status_code != length))
+//            {
+//              status = DSO_CTRL_IN_DEVICE;
+//            }
+          if (libusb_status_code < 0)
             {
               status = DSO_CTRL_IN_DEVICE;
             }
@@ -459,7 +463,7 @@ libusbdso_control_in_device (void * dso_device_handle, uint8_t request,
     }
   else
     {
-      status = DSO_NULL_HANDLE;
+      status = DSO_NULL_DESCRIPTER;
     }
   return status;
 }
@@ -484,7 +488,11 @@ libusbdso_control_out_device (void * dso_device_handle, uint8_t request,
               dso_desc->dso_device_handle,
               LIBUSB_ENDPOINT_OUT | LIBUSB_REQUEST_TYPE_VENDOR, request, value,
               index, data, length, 0);
-          if ((libusb_status_code < 0) || (libusb_status_code != length))
+//          if ((libusb_status_code < 0) || (libusb_status_code != length))
+//            {
+//              status = DSO_CTRL_IN_DEVICE;
+//            }
+          if (libusb_status_code < 0)
             {
               status = DSO_CTRL_IN_DEVICE;
             }
@@ -498,7 +506,7 @@ libusbdso_control_out_device (void * dso_device_handle, uint8_t request,
     }
   else
     {
-      status = DSO_NULL_HANDLE;
+      status = DSO_NULL_DESCRIPTER;
     }
   return status;
 }
@@ -531,7 +539,7 @@ libusbdso_close_device (void * dso_device_handle)
     }
   else
     {
-      status = DSO_NULL_HANDLE;
+      status = DSO_NULL_DESCRIPTER;
     }
   return status;
 }

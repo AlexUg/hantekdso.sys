@@ -68,6 +68,9 @@ dso_connect_cb (void * dso_device_handle)
   NTSTATUS status;
   size_t count;
 
+WINE_TRACE ("dso_connect_cb try connect\n");
+
+
   status = dso_init_device_path (dso_device_handle, device_pathW,
                                  dso_device_path);
   if (status)
@@ -236,11 +239,14 @@ dso_ioctl (DEVICE_OBJECT *device, IRP *irp)
 {
   int libusbSatus = STATUS_NOT_SUPPORTED;
   PVOID dso_device_handle = device->DeviceExtension;
+  ULONG ioCtrlCode;
+  IO_STACK_LOCATION * irpsp;
 
   if (dso_device_handle)
     {
-      IO_STACK_LOCATION *irpsp = IoGetCurrentIrpStackLocation(irp);
-      switch (irpsp->Parameters.DeviceIoControl.IoControlCode)
+      irpsp = IoGetCurrentIrpStackLocation(irp);
+      ioCtrlCode = irpsp->Parameters.DeviceIoControl.IoControlCode;
+      switch (ioCtrlCode)
         {
         case DSO_IOCTL_REPLAY:	// Get replay     METHOD_OUT_DIRECT
           WINE_TRACE_(hantekdsodev)("Hantek DSO ioctl (DSO_IOCTL_REPLAY) device: '%s-%d' (handle: 0x%lx)\n",
@@ -274,8 +280,9 @@ dso_ioctl (DEVICE_OBJECT *device, IRP *irp)
       IoCompleteRequest (irp, IO_NO_INCREMENT);
       if (libusbSatus)
         {
-          WINE_ERR_(hantekdsodev)("Hantek DSO (handle: 0x%lx) ioctl device failed: %s, libusb last error: %s (%d)\n",
+          WINE_ERR_(hantekdsodev)("Hantek DSO (handle: 0x%lx) ioctl (0x%x) device failed: %s, libusb last error: %s (%d)\n",
                                   (long) libusbdso_get_win_device_handle(dso_device_handle),
+                                  ioCtrlCode,
                                   dso_error_name(libusbSatus),
                                   libusbdso_last_error(),
                                   libusbdso_last_error_code());
@@ -476,8 +483,8 @@ dso_init_device_db (void)
     {
       cchName = DSO_REG_KEY_LENGTH;
       for (index = 0;
-          (status = RegEnumKeyExA (hKey, index, keyName, &cchName, 0, NULL,
-                                   NULL, NULL)) == 0; index++)
+          (status = RegEnumKeyExA (hKey, index, keyName, &cchName, 0, NULL, NULL, NULL)) == 0;
+          index++)
         {
           known_device = malloc (sizeof(struct t_dso_known_device));
           if (known_device)
@@ -485,6 +492,9 @@ dso_init_device_db (void)
               known_device->name = malloc (cchName + 1);
               if (known_device->name)
                 {
+                  known_device->next = 0;
+                  known_device->vendor_id = 0;
+                  known_device->product_id = 0;
                   strncpy (known_device->name, keyName, cchName + 1);
                   for (val_index = 0; val_index < REG_VAL_COUNT; val_index++)
                     {
