@@ -4,7 +4,7 @@ REGEDIT4
 "Description"="Hantek DSO Oscilloscope Driver"
 "DisplayName"="Hantek DSO Oscilloscope Driver"
 "ErrorControl"=dword:00000001
-"ImagePath"="C:\\windows\\system32\\drivers\\hantekdso.sys"
+"ImagePath"="C:\\windows\\syswow64\\drivers\\hantekdso.sys"
 "ObjectName"="LocalSystem"
 "PreshutdownTimeout"=dword:0002bf20
 "Start"=dword:00000002

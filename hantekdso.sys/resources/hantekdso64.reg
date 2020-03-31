@@ -1,0 +1,16 @@
+REGEDIT4
+
+[HKEY_LOCAL_MACHINE\Software\Wow6432Node\Hantek]
+
+[HKEY_LOCAL_MACHINE\Software\Wow6432Node\Hantek\Devices]
+
+[HKEY_LOCAL_MACHINE\Software\Wow6432Node\Hantek\Devices\D6081]
+"VendorID"=dword:000004b5
+"ProductID"=dword:00006081
+"Name"="Hantek 6082BE"
+
+[HKEY_LOCAL_MACHINE\Software\Wow6432Node\Hantek\Devices\d6cde]
+"VendorID"=dword:000004b5
+"ProductID"=dword:00006cde
+"Name"="Hantek 6074BD"
+
