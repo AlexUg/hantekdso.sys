@@ -59,20 +59,21 @@ int dso_connect_cb(void *dso_device_handle) {
 
 	WINE_TRACE ("dso_connect_cb try connect\n");
 
-	status = dso_init_device_path(dso_device_handle, device_pathW,
-			dso_device_path);
+	status = dso_init_device_path(dso_device_handle, device_pathW, dso_device_path);
 	if (status) {
-		WINE_ERR ("Init device path failed. Resulting path name exceeds max path size: %d. Error code: 0x%x\n", DSO_MAX_PATH_SIZE - 1, status);
+		WINE_ERR ("Init device path failed. Resulting path name exceeds max path size: %d. Error code: 0x%x\n",
+					DSO_MAX_PATH_SIZE - 1,
+					status);
 	} else {
-		status = dso_init_device_path(dso_device_handle, device_dos_pathW,
-				dso_device_dos_path);
+		status = dso_init_device_path(dso_device_handle, device_dos_pathW, dso_device_dos_path);
 		if (status) {
-			WINE_ERR ("Init device path failed. Resulting path name exceeds max path size: %d. Error code: 0x%x\n", DSO_MAX_PATH_SIZE - 1, status);
+			WINE_ERR ("Init device path failed. Resulting path name exceeds max path size: %d. Error code: 0x%x\n",
+						DSO_MAX_PATH_SIZE - 1,
+						status);
 		} else {
 			RtlInitUnicodeString(&dos_pathW, device_dos_pathW);
 			RtlInitUnicodeString(&pathW, device_pathW);
-			status = IoCreateDevice(dso_driver, sizeof(void*), &pathW, 0, 0,
-			FALSE, &device);
+			status = IoCreateDevice(dso_driver, sizeof(void*), &pathW, 0, 0, FALSE, &device);
 			if (status) {
 				WINE_ERR ("create device failed: error 0x%x\n", status);
 			} else {
@@ -83,9 +84,9 @@ int dso_connect_cb(void *dso_device_handle) {
 					WINE_ERR ("create symbolic link to device failed. Error code: 0x%x\n", status);
 				} else {
 					WINE_TRACE("created Hantek DSO device: '%s-%d' (handle: 0x%lx)\n",
-							libusbdso_get_device_name(dso_device_handle),
-							libusbdso_get_device_index(dso_device_handle),
-							(long) libusbdso_get_win_device_handle(dso_device_handle));
+								libusbdso_get_device_name(dso_device_handle),
+								libusbdso_get_device_index(dso_device_handle),
+								(long) libusbdso_get_win_device_handle(dso_device_handle));
 				}
 			}
 		}
@@ -103,8 +104,7 @@ int dso_disconnect_cb(void *dso_device_handle) {
 
 	device = libusbdso_get_win_device_handle(dso_device_handle);
 	if (device) {
-		status = dso_init_device_path(dso_device_handle, device_dos_pathW,
-				dso_device_dos_path);
+		status = dso_init_device_path(dso_device_handle, device_dos_pathW, dso_device_dos_path);
 		if (status) {
 			WINE_ERR ("Init device path failed. Resulting path name exceeds max path size: %d. Error code: 0x%x\n", DSO_MAX_PATH_SIZE - 1, status);
 		} else {
@@ -115,9 +115,9 @@ int dso_disconnect_cb(void *dso_device_handle) {
 			}
 
 			WINE_TRACE("delete Hantek DSO device: '%s-%d' (handle: 0x%lx)\n",
-					libusbdso_get_device_name(dso_device_handle),
-					libusbdso_get_device_index(dso_device_handle),
-					(long) libusbdso_get_win_device_handle(dso_device_handle));
+						libusbdso_get_device_name(dso_device_handle),
+						libusbdso_get_device_index(dso_device_handle),
+						(long) libusbdso_get_win_device_handle(dso_device_handle));
 			IoDeleteDevice(device);
 		}
 	}
@@ -130,20 +130,20 @@ static NTSTATUS WINAPI dso_create(DEVICE_OBJECT *device, IRP *irp) {
 
 	if (dso_device_handle) {
 		WINE_TRACE_(hantekdsodev)("Hantek DSO open device: '%s-%d' (handle: 0x%lx)\n",
-						libusbdso_get_device_name(dso_device_handle),
-						libusbdso_get_device_index(dso_device_handle),
-						(long) libusbdso_get_win_device_handle(dso_device_handle));
+									libusbdso_get_device_name(dso_device_handle),
+									libusbdso_get_device_index(dso_device_handle),
+									(long) libusbdso_get_win_device_handle(dso_device_handle));
 		libusbSatus = libusbdso_open_device(dso_device_handle);
 		if (libusbSatus) {
 			irp->IoStatus.u.Status = STATUS_UNSUCCESSFUL;
 			WINE_ERR_(hantekdsodev)("Hantek DSO (handle: 0x%lx) open device failed: %s, libusb last error: %s\n",
-							(long) libusbdso_get_win_device_handle(dso_device_handle),
-							dso_error_name(libusbSatus),
-							libusbdso_last_error());
+									(long) libusbdso_get_win_device_handle(dso_device_handle),
+									dso_error_name(libusbSatus),
+									libusbdso_last_error());
 		} else {
 			irp->IoStatus.u.Status = STATUS_SUCCESS;
 			WINE_TRACE_(hantekdsodev)("Hantek DSO open device done (handle 0x%lx)\n",
-							(long) libusbdso_get_win_device_handle(dso_device_handle));
+										(long) libusbdso_get_win_device_handle(dso_device_handle));
 		}
 		IoCompleteRequest(irp, IO_NO_INCREMENT);
 		return STATUS_SUCCESS;
@@ -158,15 +158,14 @@ static NTSTATUS WINAPI dso_read(DEVICE_OBJECT *device, IRP *irp) {
 
 	if (dso_device_handle) {
 		WINE_TRACE_(hantekdsodev)("Hantek DSO read device: '%s-%d' (handle: 0x%lx)\n",
-						libusbdso_get_device_name(dso_device_handle),
-						libusbdso_get_device_index(dso_device_handle),
-						(long) libusbdso_get_win_device_handle(dso_device_handle));
+									libusbdso_get_device_name(dso_device_handle),
+									libusbdso_get_device_index(dso_device_handle),
+									(long) libusbdso_get_win_device_handle(dso_device_handle));
 		irp->IoStatus.u.Status = STATUS_SUCCESS;
 		IoCompleteRequest(irp, IO_NO_INCREMENT);
 		return STATUS_SUCCESS;
 	} else {
-		WINE_ERR_(
-				hantekdsodev)("Hantek DSO read failed. No DSO device handler provided\n");
+		WINE_ERR_(hantekdsodev)("Hantek DSO read failed. No DSO device handler provided\n");
 		return STATUS_DRIVER_INTERNAL_ERROR;
 	}
 }
@@ -176,15 +175,14 @@ static NTSTATUS WINAPI dso_write(DEVICE_OBJECT *device, IRP *irp) {
 
 	if (dso_device_handle) {
 		WINE_TRACE_(hantekdsodev)("Hantek DSO write device: '%s-%d' (handle: 0x%lx)\n",
-						libusbdso_get_device_name(dso_device_handle),
-						libusbdso_get_device_index(dso_device_handle),
-						(long) libusbdso_get_win_device_handle(dso_device_handle));
+									libusbdso_get_device_name(dso_device_handle),
+									libusbdso_get_device_index(dso_device_handle),
+									(long) libusbdso_get_win_device_handle(dso_device_handle));
 		irp->IoStatus.u.Status = STATUS_SUCCESS;
 		IoCompleteRequest(irp, IO_NO_INCREMENT);
 		return STATUS_SUCCESS;
 	} else {
-		WINE_ERR_(
-				hantekdsodev)("Hantek DSO write failed. No DSO device handler provided\n");
+		WINE_ERR_(hantekdsodev)("Hantek DSO write failed. No DSO device handler provided\n");
 		return STATUS_DRIVER_INTERNAL_ERROR;
 	}
 }
@@ -201,29 +199,29 @@ static NTSTATUS WINAPI dso_ioctl(DEVICE_OBJECT *device, IRP *irp) {
 		switch (ioCtrlCode) {
 		case DSO_IOCTL_REPLAY:	// Get replay     METHOD_OUT_DIRECT
 			WINE_TRACE_(hantekdsodev)("Hantek DSO ioctl (DSO_IOCTL_REPLAY) device: '%s-%d' (handle: 0x%lx)\n",
-							libusbdso_get_device_name(dso_device_handle),
-							libusbdso_get_device_index(dso_device_handle),
-							(long) libusbdso_get_win_device_handle(dso_device_handle));
+										libusbdso_get_device_name(dso_device_handle),
+										libusbdso_get_device_index(dso_device_handle),
+										(long) libusbdso_get_win_device_handle(dso_device_handle));
 			libusbSatus = dso_ioctl_replay(dso_device_handle, irp);
 			break;
 		case DSO_IOCTL_REQUEST:	// Send command   METHOD_IN_DIRECT
 			WINE_TRACE_(hantekdsodev)("Hantek DSO ioctl (DSO_IOCTL_REQUEST) device: '%s-%d' (handle: 0x%lx)\n",
-							libusbdso_get_device_name(dso_device_handle),
-							libusbdso_get_device_index(dso_device_handle),
-							(long) libusbdso_get_win_device_handle(dso_device_handle));
+										libusbdso_get_device_name(dso_device_handle),
+										libusbdso_get_device_index(dso_device_handle),
+										(long) libusbdso_get_win_device_handle(dso_device_handle));
 			libusbSatus = dso_ioctl_request(dso_device_handle, irp);
 			break;
 		case DSO_IOCTL_CONTROL:	// Control        METHOD_IN_DIRECT
 			WINE_TRACE_(hantekdsodev)("Hantek DSO ioctl (DSO_IOCTL_CONTROL) device: '%s-%d' (handle: 0x%lx)\n",
-							libusbdso_get_device_name(dso_device_handle),
-							libusbdso_get_device_index(dso_device_handle),
-							(long) libusbdso_get_win_device_handle(dso_device_handle));
+										libusbdso_get_device_name(dso_device_handle),
+										libusbdso_get_device_index(dso_device_handle),
+										(long) libusbdso_get_win_device_handle(dso_device_handle));
 			libusbSatus = dso_ioctl_control(dso_device_handle, irp);
 			break;
 		default:
 			WINE_FIXME( "Hantek DSO (handle: 0x%lx) ioctl %x not supported\n",
-					(long) libusbdso_get_win_device_handle(dso_device_handle),
-					irpsp->Parameters.DeviceIoControl.IoControlCode );
+						(long) libusbdso_get_win_device_handle(dso_device_handle),
+						irpsp->Parameters.DeviceIoControl.IoControlCode );
 			irp->IoStatus.u.Status = STATUS_NOT_SUPPORTED;
 			IoCompleteRequest(irp, IO_NO_INCREMENT);
 			return STATUS_SUCCESS;
@@ -231,15 +229,15 @@ static NTSTATUS WINAPI dso_ioctl(DEVICE_OBJECT *device, IRP *irp) {
 		if (libusbSatus) {
 			irp->IoStatus.u.Status = STATUS_UNSUCCESSFUL;
 			WINE_ERR_(hantekdsodev)("Hantek DSO (handle: 0x%lx) ioctl (0x%x) device failed: %s, libusb last error: %s (%d)\n",
-							(long) libusbdso_get_win_device_handle(dso_device_handle),
-							ioCtrlCode,
-							dso_error_name(libusbSatus),
-							libusbdso_last_error(),
-							libusbdso_last_error_code());
+									(long) libusbdso_get_win_device_handle(dso_device_handle),
+									ioCtrlCode,
+									dso_error_name(libusbSatus),
+									libusbdso_last_error(),
+									libusbdso_last_error_code());
 		} else {
 			irp->IoStatus.u.Status = STATUS_SUCCESS;
 			WINE_TRACE_(hantekdsodev)("Hantek DSO ioctl device done (handle 0x%lx)\n",
-							(long) libusbdso_get_win_device_handle(dso_device_handle));
+										(long) libusbdso_get_win_device_handle(dso_device_handle));
 		}
 		IoCompleteRequest(irp, IO_NO_INCREMENT);
 		return STATUS_SUCCESS;
@@ -255,20 +253,20 @@ static NTSTATUS WINAPI dso_close(DEVICE_OBJECT *device, IRP *irp) {
 
 	if (dso_device_handle) {
 		WINE_TRACE_(hantekdsodev)("Hantek DSO close device: '%s-%d'\n",
-				libusbdso_get_device_name(dso_device_handle),
-				libusbdso_get_device_index(dso_device_handle));
-//		libusbSatus = libusbdso_close_device(dso_device_handle);
-//		if (libusbSatus) {
-//			irp->IoStatus.u.Status = STATUS_UNSUCCESSFUL;
-//			WINE_ERR_(hantekdsodev)("Hantek DSO (handle: 0x%lx) close device failed: %s, libusb last error: %s\n",
-//							(long) libusbdso_get_win_device_handle(dso_device_handle),
-//							dso_error_name(libusbSatus),
-//							libusbdso_last_error());
-//		} else {
+									libusbdso_get_device_name(dso_device_handle),
+									libusbdso_get_device_index(dso_device_handle));
+		libusbSatus = libusbdso_close_device(dso_device_handle);
+		if (libusbSatus) {
+			irp->IoStatus.u.Status = STATUS_UNSUCCESSFUL;
+			WINE_ERR_(hantekdsodev)("Hantek DSO (handle: 0x%lx) close device failed: %s, libusb last error: %s\n",
+									(long) libusbdso_get_win_device_handle(dso_device_handle),
+									dso_error_name(libusbSatus),
+									libusbdso_last_error());
+		} else {
 			irp->IoStatus.u.Status = STATUS_SUCCESS;
-//			WINE_TRACE_(hantekdsodev)("Hantek DSO close device done (handle 0x%lx)\n",
-//							(long) libusbdso_get_win_device_handle(dso_device_handle));
-//		}
+			WINE_TRACE_(hantekdsodev)("Hantek DSO close device done (handle 0x%lx)\n",
+										(long) libusbdso_get_win_device_handle(dso_device_handle));
+		}
 		IoCompleteRequest(irp, IO_NO_INCREMENT);
 		return STATUS_SUCCESS;
 	} else {

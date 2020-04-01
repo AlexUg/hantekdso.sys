@@ -79,7 +79,7 @@ static int libusb_status_code = 0;
 static struct t_dso_known_device *known_devices = NULL;
 
 // Driver descriptor.
-// Passed as parameter to 'int libusbdso_start (struct t_dso_driver_descriptor *'.
+// Passed as parameter to 'int libusbdso_start (struct t_dso_driver_descriptor *').
 static struct t_dso_driver_descriptor *driver_descripor;
 
 // Handle for 'libusb' hotplug functionality.
@@ -89,6 +89,9 @@ static libusb_hotplug_callback_handle libusb_hp_handle;
 static pthread_t event_thread;
 static pthread_attr_t event_thread_attr;
 static char event_thread_run = 1; // Run flag for thread
+static pthread_mutex_t dso_lock;
+
+static uint open_calls;
 
 // Test for equivalence of two devices.
 int check_known_device(struct t_dso_known_device *known_device,
@@ -221,6 +224,7 @@ int libusbdso_start(struct t_dso_driver_descriptor *driver_desc) {
 	int dev_count, i, status;
 
 	if (driver_desc) {
+		open_calls = 0;
 		driver_descripor = driver_desc;
 		libusb_status_code = libusb_init(NULL);
 		if (libusb_status_code) {
@@ -257,33 +261,32 @@ int libusbdso_open_device(void *dso_device_handle) {
 
 	if (dso_device_handle) {
 
+		pthread_mutex_lock(&dso_lock);
+
 		dso_desc = dso_device_handle;
 		if (dso_desc->dso_device_handle) {
 			status = DSO_NO_ERROR;
 		} else {
-			libusb_status_code = libusb_open(dso_desc->dso_device,
-					&dso_desc->dso_device_handle);
+			libusb_status_code = libusb_open(dso_desc->dso_device, &dso_desc->dso_device_handle);
 			if (libusb_status_code) {
 				status = DSO_OPEN_DEIVCE;
 			} else {
 				status = DSO_NO_ERROR;
-				libusb_status_code = libusb_set_auto_detach_kernel_driver(
-						dso_desc->dso_device_handle, 1);
+				libusb_status_code = libusb_set_auto_detach_kernel_driver(dso_desc->dso_device_handle, 1);
 				if (libusb_status_code) {
 					status = DSO_DETACH_KRN_DRV;
 				} else {
-					libusb_status_code = libusb_claim_interface(
-							dso_desc->dso_device_handle, 0);
+					libusb_status_code = libusb_claim_interface(dso_desc->dso_device_handle, 0);
 					if (libusb_status_code) {
-						libusb_status_code = libusb_set_configuration(
-								dso_desc->dso_device_handle, 1);
+						libusb_status_code = libusb_set_configuration(dso_desc->dso_device_handle, 1);
 						if (libusb_status_code) {
 							status = DSO_SET_CONF;
 						} else {
-							libusb_status_code = libusb_claim_interface(
-									dso_desc->dso_device_handle, 0);
+							libusb_status_code = libusb_claim_interface(dso_desc->dso_device_handle, 0);
 							if (libusb_status_code) {
 								status = DSO_CLAIM_IFACE;
+							} else {
+								open_calls++;
 							}
 						}
 					}
@@ -294,6 +297,8 @@ int libusbdso_open_device(void *dso_device_handle) {
 				}
 			}
 		}
+
+		pthread_mutex_unlock(&dso_lock);
 
 	} else {
 		status = DSO_NULL_DESCRIPTER;
@@ -433,15 +438,22 @@ int libusbdso_close_device(void *dso_device_handle) {
 	if (dso_device_handle) {
 		status = DSO_NO_ERROR;
 
-		dso_desc = dso_device_handle;
-		if (dso_desc->dso_device_handle) {
-			libusb_status_code = libusb_release_interface(dso_desc->dso_device_handle, 0);
-			if (libusb_status_code) {
-				status = DSO_RELEASE_IFACE;
+		pthread_mutex_lock(&dso_lock);
+
+		if (!open_calls) {
+			dso_desc = dso_device_handle;
+			if (dso_desc->dso_device_handle) {
+				libusb_status_code = libusb_release_interface(dso_desc->dso_device_handle, 0);
+				if (libusb_status_code) {
+					status = DSO_RELEASE_IFACE;
+				}
+				libusb_close(dso_desc->dso_device_handle);
+				dso_desc->dso_device_handle = 0;
+				open_calls--;
 			}
-			libusb_close(dso_desc->dso_device_handle);
-			dso_desc->dso_device_handle = 0;
 		}
+
+		pthread_mutex_unlock(&dso_lock);
 
 	} else {
 		status = DSO_NULL_DESCRIPTER;
@@ -537,8 +549,7 @@ int process_usb_device(libusb_device *device) {
 		if (status) {
 			return status;
 		} else {
-			known_device = is_device_known(dso_desc->libusb_descriptor.idVendor,
-					dso_desc->libusb_descriptor.idProduct);
+			known_device = is_device_known(dso_desc->libusb_descriptor.idVendor, dso_desc->libusb_descriptor.idProduct);
 			if (known_device) {
 				add_dso_descriptor(dso_desc, known_device);
 				if (driver_descripor->connect_cb) {
@@ -558,8 +569,7 @@ int create_dso_descriptor(libusb_device *device,
 	if (*dso_descriptor) {
 		memset(*dso_descriptor, 0, sizeof(struct t_dso_device_descriptor));
 		(*dso_descriptor)->dso_device = device;
-		libusb_get_device_descriptor(device,
-				&((*dso_descriptor)->libusb_descriptor));
+		libusb_get_device_descriptor(device, &((*dso_descriptor)->libusb_descriptor));
 
 		// TODO find and/or check endpoints
 		(*dso_descriptor)->out_endpoint = 0x02;
@@ -580,10 +590,8 @@ void add_dso_descriptor(struct t_dso_device_descriptor *dso_desc,
 	next_dso_desc = driver_descripor->first_device_handle;
 	if (next_dso_desc) {
 		while (next_dso_desc) {
-			if ((next_dso_desc->libusb_descriptor.idVendor
-					== known_device->vendor_id)
-					&& (next_dso_desc->libusb_descriptor.idProduct
-							== known_device->product_id)) {
+			if ((next_dso_desc->libusb_descriptor.idVendor == known_device->vendor_id)
+					&& (next_dso_desc->libusb_descriptor.idProduct == known_device->product_id)) {
 				if ((last_index + 1) < next_dso_desc->dso_index) {
 					break;
 				}
@@ -630,8 +638,7 @@ void delete_dso_descriptor(struct t_dso_device_descriptor *dso_descriptor) {
 }
 
 struct t_dso_device_descriptor* find_dso_descriptor(libusb_device *dev) {
-	struct t_dso_device_descriptor *result =
-			driver_descripor->first_device_handle;
+	struct t_dso_device_descriptor *result = driver_descripor->first_device_handle;
 	while (result) {
 		if (result->dso_device == dev) {
 			break;
