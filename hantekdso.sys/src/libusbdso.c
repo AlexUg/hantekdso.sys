@@ -678,7 +678,7 @@ int dso_bulk_conversation(libusb_device_handle *dso_device_handle,
 
 static void LIBUSB_CALL sync_transfer_cb(struct libusb_transfer *transfer)
 {
-	int *completed = transfer->user_data;
+	volatile int *completed = transfer->user_data;
 	*completed = 1;
 }
 
@@ -691,7 +691,7 @@ int libusbdso_control_transfer(libusb_device_handle *dev_handle,
 								uint16_t wLength) {
 	struct libusb_transfer *transfer;
 	unsigned char *buffer;
-	int completed = 0;
+	volatile int completed = 0;
 	int result;
 
 	transfer = libusb_alloc_transfer(0);
@@ -717,7 +717,7 @@ int libusbdso_control_transfer(libusb_device_handle *dev_handle,
 									dev_handle,
 									buffer,
 									sync_transfer_cb,
-									&completed,
+									(void *)&completed,
 									0);
 	transfer->flags = LIBUSB_TRANSFER_FREE_BUFFER;
 	result = libusb_submit_transfer(transfer);
@@ -770,7 +770,7 @@ int libusbdso_bulk_transfer(libusb_device_handle *dev_handle,
 							int length,
 							int *actual_length) {
 	struct libusb_transfer *transfer;
-	int completed = 0;
+	volatile int completed = 0;
 	int result;
 
 	transfer = libusb_alloc_transfer(0);
@@ -783,7 +783,7 @@ int libusbdso_bulk_transfer(libusb_device_handle *dev_handle,
 								buffer,
 								length,
 								sync_transfer_cb,
-								&completed,
+								(void *)&completed,
 								0);
 	transfer->type = LIBUSB_TRANSFER_TYPE_BULK;
 
