@@ -1,8 +1,9 @@
 
 
-WINEPREFIX		= .wine_hantek
-USER					= alexandr
-WINE_LIBS_PATH = /opt/wine-stable/lib/wine/
+WINEPREFIX            = .wine_hantek_32
+USER                  = alexandr
+WINE_ROOT             = /opt/wine-stable/
+WINE_LIBS_PATH        = $(WINE_ROOT)/lib/wine/i386-unix/
 
 
 
@@ -62,10 +63,10 @@ RC_SRCS               = $(hantekdso_dll_RC_SRCS)
 
 ### Tools
 
-CC = winegcc
-CXX = wineg++
-RC = wrc
-AR = ar
+CC     = $(WINE_ROOT)/bin/winegcc
+CXX    = $(WINE_ROOT)/bin/wineg++
+RC     = $(WINE_ROOT)/bin/wrc
+# AR     = $(WINE_ROOT)/bin/ar
 
 
 ### Generic targets
@@ -119,7 +120,7 @@ $(hantekdso_dll_MODULE).so $(hantekdso_dll_MODULE).fake: $(hantekdso_dll_OBJS) $
 
 
 install:
-	cp $(hantekdso_dll_MODULE).fake /home/$(USER)/$(WINEPREFIX)/drive_c/windows/syswow64/drivers/$(hantekdso_dll_MODULE)
-	chown $(USER):$(USER) /home/$(USER)/$(WINEPREFIX)/drive_c/windows/syswow64/drivers/$(hantekdso_dll_MODULE)
+	cp $(hantekdso_dll_MODULE).fake /home/$(USER)/$(WINEPREFIX)/drive_c/windows/system32/drivers/$(hantekdso_dll_MODULE)
+	chown $(USER):$(USER) /home/$(USER)/$(WINEPREFIX)/drive_c/windows/system32/drivers/$(hantekdso_dll_MODULE)
 	cp $(hantekdso_dll_MODULE).so $(WINE_LIBS_PATH)
 #	sudo -u $(USER) sh -c "WINEPREFIX=/home/$(USER)/$(WINEPREFIX) wine regedit.exe ./resources/hantekdso.reg"

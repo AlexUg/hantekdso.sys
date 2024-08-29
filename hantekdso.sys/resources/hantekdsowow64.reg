@@ -1,0 +1,26 @@
+REGEDIT4
+
+[HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\HantekDSO]
+"Description"="Hantek DSO Oscilloscope Driver"
+"DisplayName"="Hantek DSO Oscilloscope Driver"
+"ErrorControl"=dword:00000001
+"ImagePath"="C:\\windows\\syswow64\\drivers\\hantekdso.sys"
+"ObjectName"="LocalSystem"
+"PreshutdownTimeout"=dword:0002bf20
+"Start"=dword:00000002
+"Type"=dword:00000001
+
+[HKEY_LOCAL_MACHINE\Software\Hantek]
+
+[HKEY_LOCAL_MACHINE\Software\Hantek\Devices]
+
+[HKEY_LOCAL_MACHINE\Software\Hantek\Devices\D6081]
+"VendorID"=dword:000004b5
+"ProductID"=dword:00006081
+"Name"="Hantek 6082BE"
+
+[HKEY_LOCAL_MACHINE\Software\Hantek\Devices\d6cde]
+"VendorID"=dword:000004b5
+"ProductID"=dword:00006cde
+"Name"="Hantek 6074BD"
+
